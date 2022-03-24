@@ -1,0 +1,10 @@
+^C:\USERS\RAJAV\OPENCVFOLDER\BUILD\CMAKEFILES\7E16C0D90E2DEB0955F45BDDA4BC8A4E\GENERATE.STAMP.RULE
+setlocal
+D:\BDR\CMake\bin\cmake.exe -SC:/Users/rajav/OpenCVFolder -BC:/Users/rajav/OpenCVFolder/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/rajav/OpenCVFolder/build/opencvfolder.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
