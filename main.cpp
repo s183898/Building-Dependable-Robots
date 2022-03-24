@@ -43,27 +43,21 @@ int main(int argc, char** argv )
 
     Vec3i c = circles[1];
     Point center = Point(c[0], c[1]);
-    cout << c[0] << "," << c[1]<< std::endl;
+    //cout << c[0] << "," << c[1]<< std::endl;
     
-    Mat_<Vec3b>bgr;
-    bgr=image;
-    //cout<<image.at<char>(49,39);
-    Vec3b pixel =bgr.at(c[0],c[1]);
-    //int x = bgr.at<Vec3b>(c[0],c[1])[0];
-    //int y = bgr.at<Vec3b>(c[0],c[1])[1];
-    //int z = bgr.at<Vec3b>(c[0],c[1])[2];
-    
-    //Vec3b bgrPixel = image.at<Vec3b>(c[0], c[1]);
-    //cout<<image.at<Vec3b>(c[0], c[1])<<endl;
+    //Getting Color of Sphere
+    Vec3b pixel = image.at<Vec3b>(Point(c[0], c[1]));
+    cout << "Pixel color: " << "R: " << (int)(pixel[2])  << " G: " << (int)(pixel[1]) << " B: " << (int)(pixel[0]) << std::endl;
+    cout<<(Vec3b)(pixel)<<endl;
     // circle center
     circle( image, center, 1, Scalar(0,100,100), 3, LINE_AA);
     // circle outline
     int radius = c[2];
     circle( image, center, radius, Scalar(255,0,255), 3, LINE_AA);
 
-    //imshow("detected circles", image);
-    //namedWindow("Display Image", WINDOW_AUTOSIZE );
-    //imshow("Display Image", gray);
+    // imshow("detected circles", image);
+    // namedWindow("Display Image", WINDOW_AUTOSIZE );
+    // imshow("Display Image", gray);
     
     waitKey(0);
     return 0;
