@@ -1,0 +1,161 @@
+#include <stdio.h>
+#include <opencv2/opencv.hpp>
+#include <cmath>
+#include <opencv2/core/utils/logger.hpp>
+
+using namespace cv;
+using namespace std;
+
+RNG rng(12345);
+
+double iS_iT_CiRClE(vector<Point> con)
+{
+
+    Point2f center;
+    float radius;
+
+    minEnclosingCircle(con, center, radius);
+    double area = contourArea(con);
+    double areaBound = 3.14159 * radius * radius;
+    double diff = abs(area - areaBound);
+
+    return (abs(area - areaBound)) / areaBound;
+}
+
+void contour(Mat frame, double &x, double &y, double &radius)
+{
+
+    vector<vector<Point>> con;
+    vector<vector<Point>> conCircle;
+
+    cv::erode(frame, frame, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3)));
+    cv::erode(frame, frame, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3)));
+    cv::dilate(frame, frame, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3)));
+    cv::dilate(frame, frame, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3)));
+
+    findContours(frame, con, RETR_TREE, CHAIN_APPROX_NONE);
+    drawContours(frame, con, -1, Scalar(0, 255, 0), 2);
+    imshow("CONTOURS", frame);
+
+    vector<RotatedRect> minRect(con.size());
+
+    RNG rng(12345);
+    Mat drawing = Mat::zeros(frame.size(), CV_8UC3);
+
+    double max = 0;
+    int maxi = -1;
+
+    if (con.size() > 0)
+    {
+        for (int i = 0; i < con.size(); i++)
+        {
+            double areaC = contourArea(con[i]);
+            cout << "\n";
+            cout << "difference" << iS_iT_CiRClE(con[i]);
+            cout << "\n";
+            cout << "area" << areaC;
+            cout << "\n";
+
+            drawContours(drawing, con, i, Scalar(255, 0, 0), 2);
+
+            if (areaC >= 10)
+            {
+                double circ = iS_iT_CiRClE(con[i]);
+
+                drawContours(drawing, con, i, Scalar(0, 255, 0), 2);
+
+                if (circ < 0.35)
+                {
+
+                    drawContours(drawing, con, i, Scalar(0, 0, 255), 2);
+
+                    if (contourArea(con[i]) > max)
+                    {
+                        max = contourArea(con[i]);
+                        maxi = i;
+                    }
+                }
+            }
+        }
+    }
+    double cx;
+    double cy;
+    Rect br;
+
+    if (maxi >= 0)
+    {
+        br = boundingRect(con[maxi]);
+        cx = br.x + br.width / 2;
+        cy = br.y + br.height / 2;
+    }
+
+    y = cy;
+    x = cx;
+    if (br.width > br.height)
+    {
+        radius = br.width;
+    }
+    else
+    {
+        radius = br.height;
+    }
+
+    return;
+}
+
+Mat hueMask(Mat frame)
+{
+    Mat hsvFrame;
+    cvtColor(frame, hsvFrame, COLOR_BGR2HSV);
+    blur(hsvFrame, hsvFrame, cv::Size(1, 1));
+
+    Mat1b mask1, mask2;
+    inRange(hsvFrame, Scalar(0, 5, 5), Scalar(30, 255, 255), mask1);
+    inRange(hsvFrame, Scalar(170, 5, 5), Scalar(180, 255, 255), mask2);
+
+    Mat1b mask = mask1 | mask2;
+
+    return mask;
+}
+
+void circleCenter(Mat image, double &x, double &y, double &radius)
+{
+    Mat mask = hueMask(image);
+    contour(mask, x, y, radius);
+    Mat drawing = Mat::zeros(image.size(), CV_8UC3);
+
+    cout << "(x,y): (" << x << ", " << y << ")"
+         << "   radius:  " << radius;
+}
+
+int main(int argc, char **argv)
+{
+    cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_SILENT);
+
+    Mat imageBig;
+    String name = "golfReal4.jpg";
+    imageBig = imread("C:/Users/rasmu/OneDrive/Dokumenter/Msc 1. semester/BuildingRobotSystems/opencvTest/" + name);
+    if (!imageBig.data)
+    {
+        printf("No image data \n");
+        return -1;
+    }
+
+    Mat image;
+    cv::resize(imageBig, image, cv::Size(imageBig.cols * 0.2, imageBig.rows * 0.2));
+
+    double x = 10;
+    double y = 10;
+    double radius = 0;
+
+    circleCenter(image, x, y, radius);
+
+    circle(image, Point(x, y), radius / 2, Scalar(255, 255, 100), 1);
+    circle(image, Point(x, y), 1, Scalar(255, 255, 100), 1);
+
+    imshow("Text,", image);
+
+    waitKey(0);
+
+    return 0;
+}
